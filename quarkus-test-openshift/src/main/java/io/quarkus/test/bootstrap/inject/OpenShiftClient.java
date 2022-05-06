@@ -264,6 +264,10 @@ public final class OpenShiftClient {
         }
 
         AwaitilityUtils.untilIsTrue(() -> {
+            Log.info("IS SERVERLESS IS " + isServerlessService(service.getName()) + " service name is " + service.getName()
+                    + " services are " + kn.services().list().getItems().stream().map(
+                HasMetadata::getFullResourceName).collect(
+                            Collectors.joining(", ")));
             Log.info("Waiting for dc to be ready");
             return client.deploymentConfigs().withName(service.getName()).get() != null;
         });
