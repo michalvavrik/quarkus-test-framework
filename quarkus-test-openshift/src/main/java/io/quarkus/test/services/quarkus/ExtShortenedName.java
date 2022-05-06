@@ -7,10 +7,10 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class ExtensionOpenShiftUsingDockerBuildStrategyGitRepositoryQuarkusApplicationManagedResource
+public class ExtShortenedName
         extends ExtensionOpenShiftUsingDockerBuildStrategyQuarkusApplicationManagedResource {
 
-    public ExtensionOpenShiftUsingDockerBuildStrategyGitRepositoryQuarkusApplicationManagedResource(
+    public ExtShortenedName(
             ProdQuarkusApplicationManagedResourceBuilder model) {
         super(model);
     }

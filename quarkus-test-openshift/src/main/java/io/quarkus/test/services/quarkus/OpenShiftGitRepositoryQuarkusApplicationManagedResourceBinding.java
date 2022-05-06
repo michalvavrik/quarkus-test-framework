@@ -18,7 +18,7 @@ public class OpenShiftGitRepositoryQuarkusApplicationManagedResourceBinding
         if (annotation.deployment() == OpenShiftDeploymentStrategy.UsingOpenShiftExtension) {
             return new ExtensionOpenShiftGitRepositoryQuarkusApplicationManagedResource(builder);
         } else if (annotation.deployment() == OpenShiftDeploymentStrategy.UsingOpenShiftExtensionAndDockerBuildStrategy) {
-            return new ExtensionOpenShiftUsingDockerBuildStrategyGitRepositoryQuarkusApplicationManagedResource(builder);
+            return new ExtShortenedName(builder);
         } else if (annotation.deployment() == OpenShiftDeploymentStrategy.UsingContainerRegistry) {
             return new ContainerRegistryOpenShiftGitRepositoryQuarkusApplicationManagedResource(builder);
         } else if (annotation.deployment() == OpenShiftDeploymentStrategy.Build) {
