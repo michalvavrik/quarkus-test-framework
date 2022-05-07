@@ -13,6 +13,7 @@ import static io.quarkus.test.utils.MavenUtils.mvnCommand;
 import static io.quarkus.test.utils.MavenUtils.withProperty;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import io.quarkus.test.logging.Log;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,9 +56,17 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
 
     @Override
     protected void doInit() {
-        cloneProjectToServiceAppFolder();
-        copyBuildPropertiesIntoAppFolder();
-        deployProjectUsingMavenCommand();
+        try {
+            Log.info("DO INIT - PRE ALL");
+            cloneProjectToServiceAppFolder();
+            Log.info("DO INIT - POST CLONE PROJECT TO SERVICE APP FOLDER");
+            copyBuildPropertiesIntoAppFolder();
+            Log.info("DO INIT - POST COPY BUILD PROPERTIES INTO APP FOLDER");
+            deployProjectUsingMavenCommand();
+            Log.info("DO INIT - POST ALL");
+        } catch (Exception e) {
+            Log.error("Error is " + e.getMessage());
+        }
     }
 
     @Override
