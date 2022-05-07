@@ -118,6 +118,15 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
         args.addAll(Arrays.asList(USING_EXTENSION_PROFILE, BATCH_MODE, DISPLAY_VERSION, PACKAGE_GOAL,
                 QUARKUS_PLUGIN_DEPLOY, QUARKUS_PLUGIN_EXPOSE, QUARKUS_PLUGIN_ROUTE_EXPOSE,
                 SKIP_TESTS, SKIP_ITS, SKIP_CHECKSTYLE));
+        args.stream().filter(a -> a.startsWith("-Dinfinispan.expected-log")).findFirst().map(a -> {
+            Log.info("found a " + a);
+            var i = args.indexOf(a);
+            Log.info("index a " + i);
+            return i;
+        }).ifPresent(i -> {
+            Log.info("Putting new obj " + i);
+            args.add(i, "-Dinfinispan.expected-log='Infinispan Server.*started in,'");
+        });
         Log.info("deployProjectUsingMavenCommand 5: "+ Arrays.toString(args.toArray()));
         args.add(withContainerName());
         args.add(withKubernetesClientNamespace(namespace));
@@ -129,6 +138,15 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
         withEnvVars(args);
         withBaseImageProperties(args);
         withAdditionalArguments(args);
+        args.stream().filter(a -> a.startsWith("-Dquarkus.openshift.env.vars.quarkus-log-console-format")).findFirst().map(a -> {
+            Log.info("found b " + a);
+            var i = args.indexOf(a);
+            Log.info("index b " + i);
+            return i;
+        }).ifPresent(i -> {
+            Log.info("Putting new obj b " + i);
+            args.add(i, "-Dquarkus.openshift.env.vars.quarkus-log-console-format='%d{HH:mm:ss,SSS} %s% e%n'");
+        });
         Log.info("deployProjectUsingMavenCommand 7: "+ Arrays.toString(args.toArray()));
 
         try {
