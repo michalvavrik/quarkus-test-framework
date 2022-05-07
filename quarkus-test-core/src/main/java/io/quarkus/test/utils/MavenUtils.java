@@ -3,6 +3,7 @@ package io.quarkus.test.utils;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import io.quarkus.test.logging.Log;
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,13 +96,17 @@ public final class MavenUtils {
     }
 
     public static void installParentPomsIfNeeded(Path basePath) {
+        Log.info("INSTALL PARENT POMS IF NEEDED" + basePath);
         if (Files.exists(basePath.resolve(POM_XML))) {
             Model mavenModel = getMavenModel(basePath);
             if (mavenModel != null && mavenModel.getParent() != null) {
                 Path relativePath = basePath
                         .resolve(StringUtils.defaultIfBlank(mavenModel.getParent().getRelativePath(), ".."));
+                Log.info("in par 1");
                 installParentPom(relativePath);
+                Log.info("in par 2");
                 installParentPomsIfNeeded(relativePath);
+                Log.info("in par 3");
             }
         }
     }
