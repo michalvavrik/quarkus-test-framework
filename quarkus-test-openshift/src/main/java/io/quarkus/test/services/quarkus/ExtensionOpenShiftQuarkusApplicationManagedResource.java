@@ -127,7 +127,10 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
         withAdditionalArguments(args);
 
         try {
+            Log.info("MAVEN COMMAND IS " + Arrays.toString(args.toArray()));
+            Log.info("MAVEN APP FOLDER IS " + model.getApplicationFolder());
             new Command(args).onDirectory(model.getApplicationFolder()).runAndWait();
+            Log.info(" -------------------------------------------------------- BOOM BOOM BOOM  --------------");
         } catch (Exception e) {
             fail("Failed to run maven command. Caused by " + e.getMessage());
         }
