@@ -92,7 +92,12 @@ public final class MavenUtils {
     }
 
     public static void installParentPomsIfNeeded() {
-        installParentPomsIfNeeded(Paths.get("."));
+        Log.info("installParentPomsIfNeeded 1: ");
+        try {
+            installParentPomsIfNeeded(Paths.get("."));
+        } catch (Exception e) {
+            Log.info("INST PAR POMS IF N EX: " + e.getMessage());
+        }
     }
 
     public static void installParentPomsIfNeeded(Path basePath) {

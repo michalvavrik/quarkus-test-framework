@@ -108,23 +108,28 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
     }
 
     private void deployProjectUsingMavenCommand() {
+        Log.info("deployProjectUsingMavenCommand 1");
         installParentPomsIfNeeded();
-
+        Log.info("deployProjectUsingMavenCommand 2");
         String namespace = client.project();
-
+        Log.info("deployProjectUsingMavenCommand 3: "+ namespace);
         List<String> args = mvnCommand(model.getContext());
+        Log.info("deployProjectUsingMavenCommand 4: "+ Arrays.toString(args.toArray()));
         args.addAll(Arrays.asList(USING_EXTENSION_PROFILE, BATCH_MODE, DISPLAY_VERSION, PACKAGE_GOAL,
                 QUARKUS_PLUGIN_DEPLOY, QUARKUS_PLUGIN_EXPOSE, QUARKUS_PLUGIN_ROUTE_EXPOSE,
                 SKIP_TESTS, SKIP_ITS, SKIP_CHECKSTYLE));
+        Log.info("deployProjectUsingMavenCommand 5: "+ Arrays.toString(args.toArray()));
         args.add(withContainerName());
         args.add(withKubernetesClientNamespace(namespace));
         args.add(withKubernetesClientTrustCerts());
         args.add(withContainerImageGroup(namespace));
         args.add(withLabelsForWatching());
         args.add(withLabelsForScenarioId());
+        Log.info("deployProjectUsingMavenCommand 6: "+ Arrays.toString(args.toArray()));
         withEnvVars(args);
         withBaseImageProperties(args);
         withAdditionalArguments(args);
+        Log.info("deployProjectUsingMavenCommand 7: "+ Arrays.toString(args.toArray()));
 
         try {
             Log.info("MAVEN COMMAND IS " + Arrays.toString(args.toArray()));
@@ -132,6 +137,7 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
             new Command(args).onDirectory(model.getApplicationFolder()).runAndWait();
             Log.info(" -------------------------------------------------------- BOOM BOOM BOOM  --------------");
         } catch (Exception e) {
+            Log.info("EXXXXXXXXXXXXXX " + e.getMessage());
             fail("Failed to run maven command. Caused by " + e.getMessage());
         }
     }
