@@ -125,7 +125,8 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
             return i;
         }).ifPresent(i -> {
             Log.info("Putting new obj " + i);
-            args.add(i, "-Dinfinispan.expected-log='Infinispan Server.*started in,'");
+            args.remove(i.intValue());
+            args.add("-Dinfinispan.expected-log='Infinispan Server.*started in,'");
         });
         Log.info("deployProjectUsingMavenCommand 5: "+ Arrays.toString(args.toArray()));
         args.add(withContainerName());
@@ -145,7 +146,8 @@ public class ExtensionOpenShiftQuarkusApplicationManagedResource
             return i;
         }).ifPresent(i -> {
             Log.info("Putting new obj b " + i);
-            args.add(i, "-Dquarkus.openshift.env.vars.quarkus-log-console-format='%d{HH:mm:ss,SSS} %s% e%n'");
+            args.remove(i.intValue());
+            args.add("-Dquarkus.openshift.env.vars.quarkus-log-console-format='%d{HH:mm:ss,SSS} %s% e%n'");
         });
         Log.info("deployProjectUsingMavenCommand 7: "+ Arrays.toString(args.toArray()));
 
