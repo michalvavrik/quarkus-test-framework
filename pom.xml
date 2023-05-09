@@ -380,6 +380,7 @@
                 <module>quarkus-test-service-database</module>
                 <module>quarkus-test-service-infinispan</module>
                 <module>quarkus-test-service-grpc</module>
+                <module>quarkus-test-plugin</module>
             </modules>
         </profile>
         <profile>
