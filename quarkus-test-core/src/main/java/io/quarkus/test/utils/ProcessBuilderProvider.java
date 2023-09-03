@@ -1,7 +1,6 @@
 package io.quarkus.test.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.condition.OS;
