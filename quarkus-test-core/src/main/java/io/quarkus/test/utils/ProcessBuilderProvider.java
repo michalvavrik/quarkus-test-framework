@@ -15,7 +15,7 @@ public final class ProcessBuilderProvider {
         if (command.get(0).equals("quarkus")) {
             effectiveCommand.addAll(command.stream().limit(2).collect(Collectors.toList()));
         } else {
-            effectiveCommand.addAll(command);
+            effectiveCommand.add("quarkus");
         }
         System.out.println("using command " + Arrays.toString(effectiveCommand.toArray()));
         return new ProcessBuilder(effectiveCommand);
