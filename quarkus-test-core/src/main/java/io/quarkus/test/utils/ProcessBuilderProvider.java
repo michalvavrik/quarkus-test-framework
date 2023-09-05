@@ -12,8 +12,6 @@ public final class ProcessBuilderProvider {
 
     public static ProcessBuilder command(List<String> command) {
         List<String> effectiveCommand = new ArrayList<>();
-        //        effectiveCommand.add(command.get(0));
-        //        effectiveCommand.addAll(command.stream().skip(1).map(smth -> "\"" + smth + "\"").collect(Collectors.toList()));
         if (command.get(0).equals("quarkus")) {
             effectiveCommand.addAll(command.stream().limit(2).collect(Collectors.toList()));
         } else {
