@@ -15,6 +15,6 @@ public final class ProcessBuilderProvider {
         effectiveCommand.add(command.get(0));
         effectiveCommand.addAll(command.stream().skip(1).map(smth -> "\"" + smth + "\"").collect(Collectors.toList()));
         System.out.println("using command " + Arrays.toString(effectiveCommand.toArray()));
-        return new ProcessBuilder();
+        return new ProcessBuilder(effectiveCommand);
     }
 }
