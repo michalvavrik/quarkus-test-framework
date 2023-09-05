@@ -13,9 +13,9 @@ public final class ProcessBuilderProvider {
     public static ProcessBuilder command(List<String> command) {
         List<String> effectiveCommand = new ArrayList<>();
         if (command.get(0).equals("quarkus")) {
-            effectiveCommand.addAll(command.stream().limit(2).collect(Collectors.toList()));
+            effectiveCommand.add("c://ProgramData/chocolatey/bin/quarkus.exe");
         } else {
-            effectiveCommand.add("quarkus");
+            effectiveCommand.addAll(command.stream().limit(2).collect(Collectors.toList()));
         }
         System.out.println("using command " + Arrays.toString(effectiveCommand.toArray()));
         return new ProcessBuilder(effectiveCommand);
