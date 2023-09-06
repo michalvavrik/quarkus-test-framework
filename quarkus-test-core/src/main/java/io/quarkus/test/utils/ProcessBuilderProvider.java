@@ -13,7 +13,7 @@ public final class ProcessBuilderProvider {
     public static ProcessBuilder command(List<String> command) {
         List<String> effectiveCommand = new ArrayList<>();
         if (command.get(0).equals("quarkus")) {
-            effectiveCommand.add("\"c://ProgramData/chocolatey/bin/quarkus.exe\"");
+            effectiveCommand.add("quarkus.exe");
         } else {
             effectiveCommand.addAll(command.stream().limit(2).collect(Collectors.toList()));
         }

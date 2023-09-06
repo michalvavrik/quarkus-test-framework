@@ -182,6 +182,7 @@ public class QuarkusCliClient {
             return ProcessBuilderProvider.command(cmd)
                     .redirectErrorStream(true)
                     .redirectOutput(logOutput)
+                    .directory(Path.of("C:\\Users\\hudson\\quarkus-test-suite\\quarkus-cli").toFile())
                     .start();
         } catch (Exception e) {
             throw new RuntimeException(e);
