@@ -182,7 +182,6 @@ public class QuarkusCliClient {
             return ProcessBuilderProvider.command(cmd)
                     .redirectErrorStream(true)
                     .redirectOutput(logOutput)
-                    .directory(workingDirectory.toFile())
                     .start();
         } catch (Exception e) {
             throw new RuntimeException(e);
