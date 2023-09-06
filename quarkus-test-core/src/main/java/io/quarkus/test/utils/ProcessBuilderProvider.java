@@ -18,6 +18,8 @@ public final class ProcessBuilderProvider {
             effectiveCommand.addAll(command.stream().limit(2).collect(Collectors.toList()));
         }
         System.out.println("using command " + Arrays.toString(effectiveCommand.toArray()));
-        return new ProcessBuilder(effectiveCommand);
+        var pc = new ProcessBuilder(effectiveCommand);
+        System.out.println("env is " + pc.environment());
+        return pc;
     }
 }
