@@ -226,6 +226,7 @@ public class BaseService<T extends Service> implements Service {
             stop();
             if (getConfiguration().isTrue(DELETE_FOLDER_ON_EXIT)) {
                 try {
+                    System.out.println("base svc deleting path " + getServiceFolder());
                     FileUtils.deletePath(getServiceFolder());
                 } catch (Exception ex) {
                     Log.warn(this, "Could not delete service folder. Caused by " + ex.getMessage());

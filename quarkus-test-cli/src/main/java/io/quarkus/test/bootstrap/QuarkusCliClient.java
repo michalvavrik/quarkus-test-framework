@@ -80,6 +80,7 @@ public class QuarkusCliClient {
         service.init(s -> new CliDevModeLocalhostQuarkusApplicationManagedResource(serviceContext, this));
 
         // We need the service folder to be emptied before generating the project
+        System.out.println("CLI deleting path " + serviceContext.getServiceFolder());
         FileUtils.deletePath(serviceContext.getServiceFolder());
 
         // Generate project
@@ -104,6 +105,7 @@ public class QuarkusCliClient {
 
         Result result = runCliAndWait(serviceContext.getServiceFolder().getParent(), args.toArray(new String[args.size()]));
         assertTrue(result.isSuccessful(), "The application was not created. Output: " + result.getOutput());
+        System.out.println("so the process is finished with result " + result.exitCode);
 
         return service;
     }
@@ -151,6 +153,7 @@ public class QuarkusCliClient {
 
     private Result runCliAndWait(Path workingDirectory, String... args) {
         Result result = new Result();
+        System.out.println("okay, starting to use output fileeeeee");
         File output = workingDirectory.resolve(COMMAND_LOG_FILE).toFile();
 
         try (FileLoggingHandler loggingHandler = new FileLoggingHandler(output)) {
@@ -165,6 +168,7 @@ public class QuarkusCliClient {
 
         result.output = FileUtils.loadFile(output).trim();
         FileUtils.deleteFileContent(output);
+        System.out.println("and the content is deleted");
         return result;
     }
 
@@ -177,13 +181,17 @@ public class QuarkusCliClient {
             cmd.add(format("-D%s=%s", QUARKUS_ANALYTICS_DISABLED_LOCAL_PROP_KEY, Boolean.TRUE));
         }
 
-        Log.info(cmd.stream().collect(Collectors.joining(" ")));
+        Log.info("cmd is " + cmd.stream().collect(Collectors.joining(" ")));
         try {
-            return ProcessBuilderProvider.command(cmd)
+            var proc = ProcessBuilderProvider.command(cmd)
                     .redirectErrorStream(true)
                     .redirectOutput(logOutput)
                     .directory(workingDirectory.toFile())
                     .start();
+            System.out.println("process id is " + proc.pid());
+            System.out.println("process info is " + proc.info().toString());
+            System.out.println("print stackt: " + Arrays.toString(Thread.currentThread().getStackTrace()));
+            return proc;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

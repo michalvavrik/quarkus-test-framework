@@ -57,6 +57,7 @@ public final class FileUtils {
     }
 
     public static void recreateDirectory(Path folder) {
+        System.out.println("recreate path " + folder.toString());
         deletePath(folder);
         createDirectory(folder);
     }
