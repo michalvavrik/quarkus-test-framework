@@ -24,6 +24,7 @@ import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.builder.Version;
 import io.quarkus.test.bootstrap.ManagedResourceBuilder;
 import io.quarkus.test.bootstrap.ServiceContext;
+import io.quarkus.test.logging.Log;
 import io.quarkus.test.security.certificate.CertificateBuilder;
 import io.quarkus.test.services.Dependency;
 import io.quarkus.test.utils.ClassPathUtils;
@@ -217,11 +218,18 @@ public abstract class QuarkusApplicationManagedResourceBuilder implements Manage
     protected void configureCertificates() {
         if (certificateBuilder != null) {
             getContext().put(CertificateBuilder.INSTANCE_KEY, certificateBuilder);
+            Log.info("/!@#$%%%$%^/////////// configuring cert builder builder");
             certificateBuilder
                     .certificates()
                     .forEach(certificate -> certificate
                             .configProperties()
-                            .forEach((k, v) -> getContext().withTestScopeConfigProperty(k, v)));
+                            .forEach((k, v) -> {
+                                Log.info("/////////////////////////////"
+                                        + " configuring cert test property key '%s' and value '%s'".formatted(k, v));
+                                getContext().withTestScopeConfigProperty(k, v);
+                            }));
+        } else {
+            Log.info("/!@#$%%%$%^/////////// not configuring anything, no builder");
         }
     }
 

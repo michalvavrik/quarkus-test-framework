@@ -856,6 +856,7 @@ public final class OpenShiftClient {
         Map<String, String> output = new HashMap<>();
         for (Entry<String, String> entry : properties.entrySet()) {
             String propertyValue = entry.getValue();
+            Log.info("///////////////////////////// entry key %s entry value %s".formatted(entry.getKey(), entry.getValue()));
             if (isResource(propertyValue)) {
                 String path = entry.getValue().replace(RESOURCE_PREFIX, StringUtils.EMPTY);
                 String mountPath = getMountPath(path);
@@ -901,6 +902,9 @@ public final class OpenShiftClient {
                 // Push secret file
                 propertyValue = joinMountPathAndFileName(mountPath, filename);
                 String filePath = Files.exists(Path.of(propertyValue)) ? propertyValue : getFilePath(SLASH + filename);
+                Log.info(
+                        "//////////////////// secret with destination ////////// path %s mount path %s filename %s secret name %s property value %s file path %s"
+                                .formatted(path, mountPath, filename, secretName, propertyValue, filePath));
                 doCreateSecretFromFile(secretName, filePath);
                 volumes.putIfAbsent(mountPath, new CustomVolume(secretName, "", SECRET));
             } else if (isSecret(propertyValue)) {
@@ -1070,11 +1074,16 @@ public final class OpenShiftClient {
     private void doCreateSecretFromFile(String name, String filePath) {
         if (client.secrets().withName(name).get() == null) {
             try {
+                var output = new ArrayList<String>();
+                Log.info("/////////////// creating secret with name '%s' and path %s".formatted(name, filePath));
                 new Command(OC, "create", "secret", "generic", name, "--from-file=" + filePath,
-                        "-n", currentNamespace).runAndWait();
+                        "-n", currentNamespace).outputToLines(output);
+                Log.info("/////////////// output is " + output);
             } catch (Exception e) {
                 fail("Could not create secret. Caused by " + e.getMessage());
             }
+        } else {
+            Log.info("/////////////// secret with name '%s' is not null, not creating it".formatted(name));
         }
     }
 
