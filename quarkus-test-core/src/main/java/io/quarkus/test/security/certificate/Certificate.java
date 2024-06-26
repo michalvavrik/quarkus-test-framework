@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import io.quarkus.test.logging.Log;
 import me.escoffier.certs.CertificateGenerator;
 import me.escoffier.certs.CertificateRequest;
 import me.escoffier.certs.JksCertificateFiles;
@@ -125,6 +126,7 @@ public interface Certificate {
                         }
 
                         // mount certificate to the container
+                        System.out.println("putting random ////////////////////////////////////");
                         props.put(getRandomPropKey("crt"), toSecretProperty(containerMountPath));
                     }
 
@@ -216,6 +218,8 @@ public interface Certificate {
             }
         }
 
+        Log.info("////////////////////////// props are " + props);
+
         return new CertificateImpl(serverKeyStoreLocation, serverTrustStoreLocation, Map.copyOf(props),
                 List.copyOf(generatedClientCerts), o.password(), o.format().toString(), keyLocation, certLocation, o.prefix());
     }
@@ -296,7 +300,12 @@ public interface Certificate {
     }
 
     private static String getRandomPropKey(String store) {
-        return store + "-" + new Random().nextInt();
+        System.out.println("/////////////// get random prop key //// store " + store);
+        var random = new Random().nextInt();
+        System.out.println("//////////// / get random prop key //// random " + random);
+        var key = store + "-" + random;
+        System.out.println("/////////////// get random prop key //// generated " + key);
+        return key;
     }
 
     private static String toSecretProperty(String path) {

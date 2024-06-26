@@ -6,6 +6,7 @@ import static io.quarkus.test.utils.TestExecutionProperties.isOpenshiftPlatform;
 
 import java.nio.file.Path;
 
+import io.quarkus.test.logging.Log;
 import io.quarkus.test.utils.FileUtils;
 
 class DefaultContainerMountStrategy implements ContainerMountStrategy {
@@ -50,6 +51,8 @@ class DefaultContainerMountStrategy implements ContainerMountStrategy {
     private static String makeFileMountPathUnique(String prefix, String storeLocation) {
         var newTempCertDir = createCertsTempDir(prefix);
         var storeFile = Path.of(storeLocation).toFile();
+        Log.info("new tempt cert dir " + newTempCertDir + ": " + storeLocation + " prefix " + prefix + " storing there a file "
+                + storeFile);
         FileUtils.copyFileTo(storeFile, newTempCertDir);
         return newTempCertDir.resolve(storeFile.getName()).toAbsolutePath().toString();
     }
