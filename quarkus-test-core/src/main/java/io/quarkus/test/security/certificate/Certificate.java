@@ -97,31 +97,47 @@ public interface Certificate {
         String cn = withClientCerts ? cnAttrs[0] : "localhost";
         final CertificateRequest request = createCertificateRequest(o.prefix(), o.format(), o.password(), withClientCerts, cn);
         try {
+            Log.info("///////////////// generating request for prefix %s format %s pwd %s cn %s".formatted(o.prefix(),
+                    o.format(), o.password(), cn));
             var certFile = generator.generate(request).get(0);
+            Log.info("///////////////// generated request for prefix %s format %s pwd %s cn %s, cert file is %s"
+                    .formatted(o.prefix(), o.format(), o.password(), cn, certFile));
+            Log.info("with client certs " + withClientCerts);
             if (certFile instanceof Pkcs12CertificateFiles pkcs12CertFile) {
+                Log.info("is pkcs12 certificate");
                 serverKeyStoreLocation = getPathOrNull(pkcs12CertFile.keyStoreFile());
                 if (withClientCerts) {
                     serverTrustStoreLocation = getPathOrNull(pkcs12CertFile.serverTrustStoreFile());
+                    Log.info("with client certs truststore server " + serverTrustStoreLocation);
                     var clientKeyStoreLocation = getPathOrNull(pkcs12CertFile.clientKeyStoreFile());
                     var clientTrustStoreLocation = getPathOrNull(pkcs12CertFile.trustStoreFile());
+                    Log.info("with client certs truststore %s keystore %s client  ".formatted(clientKeyStoreLocation,
+                            clientTrustStoreLocation));
                     generatedClientCerts.add(new ClientCertificateImpl(cn, clientKeyStoreLocation, clientTrustStoreLocation));
                 } else {
                     serverTrustStoreLocation = getPathOrNull(pkcs12CertFile.trustStoreFile());
+                    Log.info("server truststore is " + serverTrustStoreLocation);
                 }
             } else if (certFile instanceof PemCertificateFiles pemCertsFile) {
                 keyLocation = getPathOrNull(pemCertsFile.keyFile());
                 certLocation = getPathOrNull(pemCertsFile.certFile());
+                Log.info("is pem certificate key loc is " + keyLocation + " cert loc is " + certLocation);
                 if (o.createPkcs12TsForPem()) {
                     // PKCS12 truststore
                     serverTrustStoreLocation = createPkcs12TruststoreForPem(pemCertsFile.trustStore(), o.password(), cn);
+                    Log.info("create pkcs12 truststore " + serverTrustStoreLocation);
                 } else {
                     // ca-cert
                     serverTrustStoreLocation = getPathOrNull(pemCertsFile.trustStore());
+                    Log.info("ca cert " + serverTrustStoreLocation);
                 }
+                Log.info("mount to container " + o.containerMountStrategy().mountToContainer());
                 if (o.containerMountStrategy().mountToContainer()) {
                     if (certLocation != null) {
                         var containerMountPath = o.containerMountStrategy().certPath(certLocation);
+                        Log.info("cert is not null " + containerMountPath);
                         if (o.containerMountStrategy().containerShareMountPathWithApp()) {
+                            Log.info("container share app");
                             certLocation = containerMountPath;
                         }
 
@@ -130,8 +146,11 @@ public interface Certificate {
                         props.put(getRandomPropKey("crt"), toSecretProperty(containerMountPath));
                     }
 
+                    Log.info("key location is " + keyLocation);
                     if (keyLocation != null) {
                         var containerMountPath = o.containerMountStrategy().keyPath(keyLocation);
+                        Log.info("container mount path " + containerMountPath);
+                        Log.info("key share mou " + o.containerMountStrategy().containerShareMountPathWithApp());
                         if (o.containerMountStrategy().containerShareMountPathWithApp()) {
                             keyLocation = containerMountPath;
                         }
@@ -141,17 +160,23 @@ public interface Certificate {
                     }
                 }
             } else if (certFile instanceof JksCertificateFiles jksCertFile) {
+                Log.info("is jks certificate " + withClientCerts);
                 serverKeyStoreLocation = getPathOrNull(jksCertFile.keyStoreFile());
+                Log.info("server key sto" + serverKeyStoreLocation);
                 if (withClientCerts) {
                     serverTrustStoreLocation = getPathOrNull(jksCertFile.serverTrustStoreFile());
                     var clientKeyStoreLocation = getPathOrNull(jksCertFile.clientKeyStoreFile());
                     var clientTrustStoreLocation = getPathOrNull(jksCertFile.trustStoreFile());
+                    Log.info("svr %s client key %s trust %s".formatted(serverTrustStoreLocation, clientKeyStoreLocation,
+                            clientTrustStoreLocation));
                     generatedClientCerts.add(new ClientCertificateImpl(cn, clientKeyStoreLocation, clientTrustStoreLocation));
                 } else {
                     serverTrustStoreLocation = getPathOrNull(jksCertFile.trustStoreFile());
+                    Log.info("jks trust " + serverTrustStoreLocation);
                 }
             }
         } catch (Exception e) {
+            Log.info("exc is " + e.getMessage());
             throw new RuntimeException("Failed to generate certificate", e);
         }
 
