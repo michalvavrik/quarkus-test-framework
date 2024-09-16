@@ -33,6 +33,7 @@ public class QuarkusCliClient {
     private static final String QUARKUS_VERSION_PROPERTY_NAME = "quarkus.version";
     private static final String QUARKUS_UPSTREAM_VERSION = "999-SNAPSHOT";
     private static final String BUILD = "build";
+    private static final String DEV = "dev";
     private static final PropertyLookup COMMAND = new PropertyLookup("ts.quarkus.cli.cmd", "quarkus");
     private static final Path TARGET = Paths.get("target");
 
@@ -73,7 +74,7 @@ public class QuarkusCliClient {
 
     public Process runOnDev(Path servicePath, File logOutput, Map<String, String> arguments) {
         List<String> cmd = new ArrayList<>();
-        cmd.add("dev");
+        cmd.add(DEV);
         cmd.addAll(arguments.entrySet().stream()
                 .map(e -> "-D" + e.getKey() + "=" + e.getValue())
                 .toList());
@@ -234,10 +235,7 @@ public class QuarkusCliClient {
         cmd.addAll(Arrays.asList(COMMAND.get().split(" ")));
         cmd.addAll(Arrays.asList(args));
 
-        if (QuarkusProperties.disableBuildAnalytics()) {
-            // TODO: if logic behind setting disabled analytics in our FW get revision
-            //   alter io.quarkus.test.bootstrap.tls.QuarkusTlsCommand.runTlsCommand
-            //   QE tracker: https://issues.redhat.com/browse/QQE-935
+        if (sendsBuildAnalytics(cmd) && QuarkusProperties.disableBuildAnalytics()) {
             cmd.add(format("-D%s=%s", QUARKUS_ANALYTICS_DISABLED_LOCAL_PROP_KEY, Boolean.TRUE));
         }
 
@@ -251,6 +249,13 @@ public class QuarkusCliClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private boolean sendsBuildAnalytics(List<String> cmd) {
+        if (!cmd.isEmpty()) {
+            return cmd.contains(BUILD) || cmd.contains(DEV);
+        }
+        return false;
     }
 
     private static boolean isUpstream() {
