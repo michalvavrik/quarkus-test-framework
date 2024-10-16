@@ -38,7 +38,7 @@ public final class SqlServerManagedResourceBuilder extends ContainerManagedResou
 
         var destStrategy = new FixedPathContainerMountStrategy("/etc/ssl/ca-crt/mssql-ca.crt", null,
                 "/etc/ssl/private/mssql.key", "/etc/ssl/certs/mssql.crt");
-        var cert = Certificate.of(CERTIFICATE_PREFIX, PEM, "password", certTargetDir(), destStrategy, true);
+        var cert = Certificate.of(CERTIFICATE_PREFIX, PEM, "WeNeedReallyLongPassword", certTargetDir(), destStrategy, true);
 
         cert.configProperties().forEach(context::withTestScopeConfigProperty);
         context.withTestScopeConfigProperty("mssql-config", createConfigFileProperty());
