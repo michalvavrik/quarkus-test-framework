@@ -2,31 +2,19 @@ package io.quarkus.test.services.quarkus;
 
 import static io.quarkus.test.services.quarkus.QuarkusMavenPluginBuildHelper.findJvmArtifact;
 import static io.quarkus.test.services.quarkus.QuarkusMavenPluginBuildHelper.findNativeBuildExecutable;
+import static io.quarkus.test.services.quarkus.model.QuarkusProperties.isNativeEnabled;
 import static io.quarkus.test.utils.FileUtils.findTargetFile;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.annotation.Annotation;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
-import io.quarkus.bootstrap.app.AugmentAction;
-import io.quarkus.bootstrap.app.AugmentResult;
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.test.bootstrap.ManagedResource;
 import io.quarkus.test.bootstrap.ServiceContext;
-import io.quarkus.test.common.PathTestHelper;
-import io.quarkus.test.logging.Log;
 import io.quarkus.test.security.certificate.CertificateBuilder;
 import io.quarkus.test.services.QuarkusApplication;
-import io.quarkus.test.services.quarkus.model.QuarkusProperties;
 
 public class ProdQuarkusApplicationManagedResourceBuilder extends ArtifactQuarkusApplicationManagedResourceBuilder {
 
@@ -112,7 +100,7 @@ public class ProdQuarkusApplicationManagedResourceBuilder extends ArtifactQuarku
         }
         createSnapshotOfBuildPropertiesIfNotExists();
         if (!buildPropertiesChanged()) {
-            if (QuarkusProperties.isNativeEnabled(getContext())) {
+            if (isNativeEnabled(getContext())) {
                 // custom native executable has different name, therefore we can safely re-use it
                 artifactLocation = findNativeBuildExecutable(targetFolder, requiresCustomBuild(), getApplicationFolder());
             } else if (!requiresCustomBuild()) {
@@ -124,59 +112,11 @@ public class ProdQuarkusApplicationManagedResourceBuilder extends ArtifactQuarku
     }
 
     private Path buildArtifact() {
-        if (QuarkusProperties.isNativeEnabled(getContext())) {
-            return new QuarkusMavenPluginBuildHelper(this, getTargetFolderForLocalArtifacts())
-                    .buildNativeExecutable()
-                    .orElseGet(() -> {
-                        Log.warn("""
-                                Quarkus Maven plugin is missing, falling back to Quarkus bootstrap strategy.
-                                Please add 'quarkus-maven-plugin' to your project as the bootstrap strategy will be removed
-                                in the future.
-                                """);
-                        return buildArtifactUsingQuarkusBootstrap();
-                    });
+        var quarkusMvnPluginHelper = new QuarkusMavenPluginBuildHelper(this, getTargetFolderForLocalArtifacts());
+        if (isNativeEnabled(getContext())) {
+            return quarkusMvnPluginHelper.buildNativeExecutable();
         }
-        if (!getForcedDependencies().isEmpty()) {
-            return new QuarkusMavenPluginBuildHelper(this, getTargetFolderForLocalArtifacts()).jvmModeBuild();
-        }
-        return buildArtifactUsingQuarkusBootstrap();
-    }
-
-    private Path buildArtifactUsingQuarkusBootstrap() {
-        try {
-            createSnapshotOfBuildProperties();
-            Path appFolder = getApplicationFolder();
-
-            JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class).addClasses(getAppClasses());
-            javaArchive.as(ExplodedExporter.class).exportExplodedInto(appFolder.toFile());
-
-            Path testLocation = PathTestHelper.getTestClassesLocation(getContext().getTestContext().getRequiredTestClass());
-            QuarkusBootstrap.Builder builder = QuarkusBootstrap.builder().setApplicationRoot(appFolder)
-                    .setMode(QuarkusBootstrap.Mode.PROD)
-                    .addExcludedPath(testLocation)
-                    .setIsolateDeployment(true)
-                    .setProjectRoot(testLocation)
-                    .setBaseName(getContext().getName())
-                    .setTargetDirectory(appFolder)
-                    .setLocalProjectDiscovery(true);
-
-            if (!getForcedDependencies().isEmpty()) {
-                builder.setForcedDependencies(new ArrayList<>(getForcedDependencies()));
-            }
-
-            AugmentResult result;
-            try (CuratedApplication curatedApplication = builder.build().bootstrap()) {
-                AugmentAction action = curatedApplication.createAugmentor();
-                result = action.createProductionApplication();
-            }
-
-            return Optional.ofNullable(result.getNativeResult())
-                    .orElseGet(() -> result.getJar().getPath());
-        } catch (Exception ex) {
-            fail("Failed to build Quarkus artifacts. Caused by " + ex);
-        }
-
-        return null;
+        return quarkusMvnPluginHelper.jvmModeBuild();
     }
 
 }

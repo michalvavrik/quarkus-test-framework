@@ -42,7 +42,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.utils.ClassPathUtils;
 import io.quarkus.test.utils.Command;
 import io.quarkus.test.utils.FileUtils;
@@ -157,8 +156,12 @@ class QuarkusMavenPluginBuildHelper {
                 """));
     }
 
-    Optional<Path> buildNativeExecutable() {
-        return buildArtifact(Mode.NATIVE);
+    Path buildNativeExecutable() {
+        return buildArtifact(Mode.NATIVE).orElseThrow(() -> new RuntimeException("""
+                Quarkus Maven plugin is missing, falling back to Quarkus bootstrap strategy.
+                Please add 'quarkus-maven-plugin' to your project as the bootstrap strategy will be removed
+                in the future.
+                """));
     }
 
     private Optional<Path> buildArtifact(Mode mode) {
@@ -406,20 +409,20 @@ class QuarkusMavenPluginBuildHelper {
                     Element newDependency = pomDocument.createElement("dependency");
                     Element artifactId = pomDocument.createElement("artifactId");
                     // <artifactId>
-                    artifactId.setTextContent(forcedDependency.getArtifactId());
+                    artifactId.setTextContent(forcedDependency.artifactId());
                     newDependency.appendChild(artifactId);
                     // <groupId>
                     Element groupId = pomDocument.createElement("groupId");
-                    if (forcedDependency.getGroupId().isEmpty()) {
+                    if (forcedDependency.groupId().isEmpty()) {
                         groupId.setTextContent("io.quarkus");
                     } else {
-                        groupId.setTextContent(forcedDependency.getGroupId());
+                        groupId.setTextContent(forcedDependency.groupId());
                     }
                     newDependency.appendChild(groupId);
                     // <version>
-                    if (forcedDependency.getVersion() != null && !forcedDependency.getVersion().isEmpty()) {
+                    if (forcedDependency.version() != null && !forcedDependency.version().isEmpty()) {
                         Element version = pomDocument.createElement("version");
-                        version.setTextContent(forcedDependency.getVersion());
+                        version.setTextContent(forcedDependency.version());
                         newDependency.appendChild(version);
                     }
                     childNode.appendChild(newDependency);

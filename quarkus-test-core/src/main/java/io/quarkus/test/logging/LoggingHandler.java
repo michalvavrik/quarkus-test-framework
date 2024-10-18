@@ -3,10 +3,10 @@ package io.quarkus.test.logging;
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
-
-import org.apache.maven.shared.utils.StringUtils;
 
 import io.quarkus.test.utils.AwaitilityUtils;
 
@@ -16,30 +16,28 @@ public abstract class LoggingHandler implements Closeable {
     private static final String ANY = ".*";
 
     private final List<String> logs = new CopyOnWriteArrayList<>();
-    private Thread innerThread;
-    private boolean running = false;
+    private Timer timer = null;
 
     protected abstract void handle();
 
     public void startWatching() {
+        if (timer != null) {
+            return;
+        }
+
         logs.clear();
-        running = true;
-        innerThread = new Thread(this::run);
-        innerThread.setDaemon(true);
-        innerThread.start();
+
+        timer = new Timer();
+        timer.schedule(new LoggingHandlerTask(), TIMEOUT_IN_MILLIS, TIMEOUT_IN_MILLIS);
     }
 
     public void stopWatching() {
-        flush();
-        running = false;
-        logs.clear();
-        if (innerThread != null) {
-            try {
-                innerThread.interrupt();
-            } catch (Exception ignored) {
-
-            }
+        if (timer == null) {
+            return;
         }
+        timer.cancel();
+        flush();
+        logs.clear();
     }
 
     public List<String> logs() {
@@ -57,20 +55,7 @@ public abstract class LoggingHandler implements Closeable {
 
     @Override
     public void close() {
-        if (running) {
-            stopWatching();
-        }
-    }
-
-    protected void run() {
-        while (running) {
-            try {
-                handle();
-                Thread.sleep(TIMEOUT_IN_MILLIS);
-            } catch (Exception ignored) {
-
-            }
-        }
+        stopWatching();
     }
 
     protected void onLine(String line) {
@@ -85,12 +70,12 @@ public abstract class LoggingHandler implements Closeable {
     }
 
     protected void onLines(String lines) {
-        Stream.of(lines.split("\\r?\\n")).filter(StringUtils::isNotEmpty).forEach(this::onLine);
+        Stream.of(lines.split("\\r?\\n")).filter(LoggingHandler::isNotEmpty).forEach(this::onLine);
     }
 
     protected void onStringDifference(String newLines, String oldLines) {
-        if (StringUtils.isNotEmpty(oldLines)) {
-            onLines(StringUtils.replace(newLines, oldLines, ""));
+        if (isNotEmpty(oldLines)) {
+            onLines(replace(newLines, oldLines));
         } else {
             onLines(newLines);
         }
@@ -100,4 +85,37 @@ public abstract class LoggingHandler implements Closeable {
         return true;
     }
 
+    private static boolean isNotEmpty(String text) {
+        return text != null && !text.isEmpty();
+    }
+
+    private static String replace(String text, String repl) {
+        if (text != null && repl != null && !repl.isEmpty()) {
+            StringBuilder buf = new StringBuilder(text.length());
+            int start = 0;
+
+            int end;
+            while ((end = text.indexOf(repl, start)) != -1) {
+                buf.append(text, start, end);
+                start = end + repl.length();
+            }
+
+            buf.append(text, start, text.length());
+            return buf.toString();
+        } else {
+            return text;
+        }
+    }
+
+    private class LoggingHandlerTask extends TimerTask {
+
+        @Override
+        public void run() {
+            try {
+                handle();
+            } catch (Exception exception) {
+                Log.debug("Exception thrown by logging handler", exception.getMessage());
+            }
+        }
+    }
 }
